@@ -127,6 +127,12 @@ found:
   p->pid = allocpid();
   p->state = USED;
 
+  // p->handler = 0;
+  // p->ticks = 0;
+  // p->cur_ticks = 0;
+  // p->alarm_tf = 0;
+  // p->alarm_on = 0;
+
   // Allocate a trapframe page.
   if ((p->trapframe = (struct trapframe *)kalloc()) == 0)
   {
@@ -152,7 +158,6 @@ found:
   p->rtime = 0;
   p->etime = 0;
   p->ctime = ticks;
-
   memset(&p->syscall_counts, 0, sizeof(p->syscall_counts));
 
   return p;

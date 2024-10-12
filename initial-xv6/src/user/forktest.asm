@@ -47,7 +47,7 @@ forktest(void)
 
   print("fork test\n");
   3a:	00000517          	auipc	a0,0x0
-  3e:	41650513          	addi	a0,a0,1046 # 450 <getsyscount+0xc>
+  3e:	42650513          	addi	a0,a0,1062 # 460 <sigreturn+0xc>
   42:	00000097          	auipc	ra,0x0
   46:	fbe080e7          	jalr	-66(ra) # 0 <print>
 
@@ -71,7 +71,7 @@ forktest(void)
   if(n == N){
     print("fork claimed to work N times!\n");
   64:	00000517          	auipc	a0,0x0
-  68:	43c50513          	addi	a0,a0,1084 # 4a0 <getsyscount+0x5c>
+  68:	44c50513          	addi	a0,a0,1100 # 4b0 <sigreturn+0x5c>
   6c:	00000097          	auipc	ra,0x0
   70:	f94080e7          	jalr	-108(ra) # 0 <print>
     exit(1);
@@ -87,7 +87,7 @@ forktest(void)
     if(wait(0) < 0){
       print("wait stopped early\n");
   86:	00000517          	auipc	a0,0x0
-  8a:	3da50513          	addi	a0,a0,986 # 460 <getsyscount+0x1c>
+  8a:	3ea50513          	addi	a0,a0,1002 # 470 <sigreturn+0x1c>
   8e:	00000097          	auipc	ra,0x0
   92:	f72080e7          	jalr	-142(ra) # 0 <print>
       exit(1);
@@ -100,7 +100,7 @@ forktest(void)
   if(wait(0) != -1){
     print("wait got too many\n");
   a0:	00000517          	auipc	a0,0x0
-  a4:	3d850513          	addi	a0,a0,984 # 478 <getsyscount+0x34>
+  a4:	3e850513          	addi	a0,a0,1000 # 488 <sigreturn+0x34>
   a8:	00000097          	auipc	ra,0x0
   ac:	f58080e7          	jalr	-168(ra) # 0 <print>
     exit(1);
@@ -127,7 +127,7 @@ forktest(void)
 
   print("fork test OK\n");
   e0:	00000517          	auipc	a0,0x0
-  e4:	3b050513          	addi	a0,a0,944 # 490 <getsyscount+0x4c>
+  e4:	3c050513          	addi	a0,a0,960 # 4a0 <sigreturn+0x4c>
   e8:	00000097          	auipc	ra,0x0
   ec:	f18080e7          	jalr	-232(ra) # 0 <print>
 }
@@ -824,3 +824,23 @@ getsyscount:
  446:	00000073          	ecall
  ret
  44a:	8082                	ret
+
+000000000000044c <sigalarm>:
+.global sigalarm
+sigalarm:
+ li a7, SYS_sigalarm
+ 44c:	48e1                	li	a7,24
+ ecall
+ 44e:	00000073          	ecall
+ ret
+ 452:	8082                	ret
+
+0000000000000454 <sigreturn>:
+.global sigreturn
+sigreturn:
+ li a7, SYS_sigreturn
+ 454:	48e5                	li	a7,25
+ ecall
+ 456:	00000073          	ecall
+ ret
+ 45a:	8082                	ret

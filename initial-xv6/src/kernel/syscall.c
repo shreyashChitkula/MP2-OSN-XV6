@@ -99,6 +99,9 @@ extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
 extern uint64 sys_waitx(void);
 extern uint64 sys_getsyscount(void);
+extern uint64 sys_sigalarm(void);
+extern uint64 sys_sigreturn(void);
+
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -126,6 +129,8 @@ static uint64 (*syscalls[])(void) = {
     [SYS_close] sys_close,
     [SYS_waitx] sys_waitx,
     [SYS_getsyscount] sys_getsyscount,
+    [SYS_sigalarm] sys_sigalarm,
+    [SYS_sigreturn] sys_sigreturn,
 };
 
 // Add a new array to keep track of syscall counts
@@ -140,6 +145,8 @@ void syscall(void)
   {
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
+    // if(num == SYS_exec)
+    //   printf("exec called in %d\n",p->pid);
     p->trapframe->a0 = syscalls[num]();
     syscall_counts[num]++; // Increment the count for this syscall
   }

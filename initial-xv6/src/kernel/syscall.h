@@ -22,4 +22,7 @@
 #define SYS_close  21
 #define SYS_waitx  22
 #define SYS_getsyscount 23
-#define NSYSCALLS 24  // Total number of syscalls (including the new one)
+#define SYS_sigalarm  24
+#define SYS_sigreturn 25
+#define NSYSCALLS 26  // Total number of syscalls (including the new one)
+

@@ -79,8 +79,33 @@ void usertrap(void)
     exit(-1);
 
   // give up the CPU if this is a timer interrupt.
+  // if (which_dev == 2)
+  //   yield();
   if (which_dev == 2)
+  {
+    // timer interrupt
     yield();
+
+    struct proc *p = myproc();
+    if (p->alarm_interval > 0)
+    {
+      p->ticks_count++;
+      if (p->ticks_count >= p->alarm_interval && !p->alarm_active)
+      {
+        p->ticks_count = 0;
+        p->alarm_active = 1;
+
+        // Save current trapframe
+        p->alarm_tf = kalloc();
+        if (p->alarm_tf == 0)
+          panic("usertrap: out of memory");
+        memmove(p->alarm_tf, p->trapframe, sizeof(struct trapframe));
+
+        // Set up trapframe to call alarm_handler
+        p->trapframe->epc = (uint64)p->alarm_handler;
+      }
+    }
+  }
 
   usertrapret();
 }

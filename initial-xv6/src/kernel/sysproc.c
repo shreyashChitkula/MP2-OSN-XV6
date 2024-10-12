@@ -135,3 +135,35 @@ sys_getsyscount(void)
   syscall_counts[syscall_num] = 0; // Reset the count after reading
   return count;
 }
+
+uint64
+sys_sigalarm(void)
+{
+  int interval;
+  uint64 handler;
+
+  argint(0, &interval);
+  argaddr(1, &handler);
+
+  struct proc *p = myproc();
+  p->alarm_interval = interval;
+  p->alarm_handler = (void (*)())handler;
+  p->ticks_count = 0;
+  p->alarm_active = 0;
+
+  return 0;
+}
+
+uint64
+sys_sigreturn(void)
+{
+  struct proc *p = myproc();
+  if (p->alarm_tf)
+  {
+    memmove(p->trapframe, p->alarm_tf, sizeof(struct trapframe));
+    kfree(p->alarm_tf);
+    p->alarm_tf = 0;
+    p->alarm_active = 0;
+  }
+  return p->trapframe->a0;
+}

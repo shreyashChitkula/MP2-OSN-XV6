@@ -1,4 +1,4 @@
-#define NSYSCALLS 24
+#define NSYSCALLS 26
 // Saved registers for kernel context switches.
 struct context
 {
@@ -121,6 +121,12 @@ struct proc
   uint ctime;                  // When was the process created
   uint etime;                  // When did the process exited
   uint64 syscall_counts[NSYSCALLS];
+
+  int alarm_interval;         // Alarm interval in ticks
+  void (*alarm_handler)();    // Pointer to the alarm handler function
+  int ticks_count;            // Counter for ticks since last alarm
+  int alarm_active;           // Flag to prevent reentrant calls
+  struct trapframe *alarm_tf; // Saved trapframe for sigreturn
 };
 
 extern struct proc proc[NPROC];

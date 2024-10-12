@@ -38,3 +38,5 @@ entry("sleep");
 entry("uptime");
 entry("waitx");
 entry("getsyscount");
+entry("sigalarm");
+entry("sigreturn");

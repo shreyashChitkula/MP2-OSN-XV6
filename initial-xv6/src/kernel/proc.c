@@ -26,6 +26,26 @@ extern char trampoline[]; // trampoline.S
 // must be acquired before any p->lock.
 struct spinlock wait_lock;
 
+#ifdef LBS
+uint64
+settickets(int number)
+{
+  if (number <= 0)
+    return -1;
+  myproc()->tickets = number;
+  return number;
+}
+
+// Helper function to get a random number
+uint random(void)
+{
+  // Simple linear congruential generator
+  static uint seed = 1;
+  seed = seed * 1103515245 + 12345;
+  return (seed >> 16) & 0x7fff;
+}
+#endif
+
 // Allocate a page for each process's kernel stack.
 // Map it high in memory, followed by an invalid
 // guard page.
@@ -159,6 +179,11 @@ found:
   p->etime = 0;
   p->ctime = ticks;
   memset(&p->syscall_counts, 0, sizeof(p->syscall_counts));
+
+#ifdef LBS
+  p->tickets = 1;          // Default ticket count
+  p->arrival_time = ticks; // Set arrival time
+#endif
 
   return p;
 }
@@ -340,6 +365,10 @@ int fork(void)
   release(&np->lock);
 
   memmove(&np->syscall_counts, &p->syscall_counts, sizeof(p->syscall_counts));
+#ifdef LBS
+  np->tickets = p->tickets; // Child inherits parent's tickets
+  np->arrival_time = ticks; // Set arrival time for the new process
+#endif
 
   return pid;
 }
@@ -468,6 +497,77 @@ int wait(uint64 addr)
 //  - swtch to start running that process.
 //  - eventually that process transfers control
 //    via swtch back to the scheduler.
+
+#ifdef LBS
+void scheduler(void)
+{
+  struct proc *p;
+  struct cpu *c = mycpu();
+
+  c->proc = 0;
+  for (;;)
+  {
+    // Avoid deadlock by ensuring that devices can interrupt.
+    intr_on();
+
+    int total_tickets = 0;
+    struct proc *candidates[NPROC];
+    int num_candidates = 0;
+
+    // Count total tickets and find candidates
+    for (p = proc; p < &proc[NPROC]; p++)
+    {
+      acquire(&p->lock);
+      if (p->state == RUNNABLE)
+      {
+        total_tickets += p->tickets;
+        candidates[num_candidates++] = p;
+      }
+      release(&p->lock);
+    }
+
+    if (total_tickets > 0)
+    {
+      // Choose a winner
+      int winner_ticket = random() % total_tickets;
+      struct proc *winner = 0;
+      int current_tickets = 0;
+
+      for (int i = 0; i < num_candidates; i++)
+      {
+        current_tickets += candidates[i]->tickets;
+        if (current_tickets > winner_ticket)
+        {
+          winner = candidates[i];
+          break;
+        }
+      }
+
+      // Check for earlier arrival with same tickets
+      for (int i = 0; i < num_candidates; i++)
+      {
+        if (candidates[i]->tickets == winner->tickets &&
+            candidates[i]->arrival_time < winner->arrival_time)
+        {
+          winner = candidates[i];
+        }
+      }
+
+      // Run the winning process
+      acquire(&winner->lock);
+      if (winner->state == RUNNABLE)
+      {
+        winner->state = RUNNING;
+        c->proc = winner;
+        swtch(&c->context, &winner->context);
+        c->proc = 0;
+      }
+      release(&winner->lock);
+    }
+  }
+}
+#else
+// Default round-robin scheduling
 void scheduler(void)
 {
   struct proc *p;
@@ -499,7 +599,7 @@ void scheduler(void)
     }
   }
 }
-
+#endif
 // Switch to scheduler.  Must hold only p->lock
 // and have changed proc->state. Saves and restores
 // intena because intena is a property of this

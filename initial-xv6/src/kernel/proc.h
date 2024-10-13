@@ -1,4 +1,4 @@
-#define NSYSCALLS 26
+#define NSYSCALLS 27
 // Saved registers for kernel context switches.
 struct context
 {
@@ -127,6 +127,12 @@ struct proc
   int ticks_count;            // Counter for ticks since last alarm
   int alarm_active;           // Flag to prevent reentrant calls
   struct trapframe *alarm_tf; // Saved trapframe for sigreturn
+
+#ifdef LBS
+  // Add these fields to struct proc
+  int tickets;         // Number of tickets for lottery scheduling
+  uint64 arrival_time; // Arrival time of the process
+#endif
 };
 
 extern struct proc proc[NPROC];

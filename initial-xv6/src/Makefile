@@ -30,6 +30,10 @@ OBJS = \
   $K/plic.o \
   $K/virtio_disk.o
 
+# ifeq ($(SCHEDULER),LBS)
+# OBJS += $K/random.o
+# endif
+
 # riscv64-unknown-elf- or riscv64-linux-gnu-
 # perhaps in /opt/riscv/bin
 #TOOLPREFIX = 
@@ -50,6 +54,13 @@ endif
 
 QEMU = qemu-system-riscv64
 
+# Add these lines after the QEMU definition:
+ifeq ($(SCHEDULER),LBS)
+QEMUOPTS += -D scheduler=LBS
+else ifeq ($(SCHEDULER),MLFQ)
+QEMUOPTS += -D scheduler=MLFQ
+endif
+
 CC = $(TOOLPREFIX)gcc
 AS = $(TOOLPREFIX)gas
 LD = $(TOOLPREFIX)ld
@@ -62,6 +73,13 @@ CFLAGS += -mcmodel=medany
 CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
 CFLAGS += -I.
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
+
+
+# Add SCHEDULER option
+SCHEDULER ?= RR
+
+# Modify CFLAGS
+CFLAGS += -D$(SCHEDULER)
 
 # Disable PIE when possible (for Ubuntu 16.10 toolchain)
 ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)
@@ -173,4 +191,11 @@ qemu: $K/kernel fs.img
 qemu-gdb: $K/kernel .gdbinit fs.img
 	@echo "*** Now run 'gdb' in another window." 1>&2
 	$(QEMU) $(QEMUOPTS) -S $(QEMUGDB)
+
+# Add a new target for cleaning and building with a specific scheduler:
+qemu-scheduler: clean qemu
+
+# $K/random.o: kernel/random.c
+# 	$(CC) $(CFLAGS) -c -o $K/random.o kernel/random.c
+
 

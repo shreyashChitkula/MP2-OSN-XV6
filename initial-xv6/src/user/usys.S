@@ -125,3 +125,8 @@ sigreturn:
  li a7, SYS_sigreturn
  ecall
  ret
+.global settickets
+settickets:
+ li a7, SYS_settickets
+ ecall
+ ret

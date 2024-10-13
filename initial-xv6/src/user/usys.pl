@@ -40,3 +40,4 @@ entry("waitx");
 entry("getsyscount");
 entry("sigalarm");
 entry("sigreturn");
+entry("settickets");

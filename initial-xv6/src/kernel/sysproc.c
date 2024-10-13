@@ -167,3 +167,12 @@ sys_sigreturn(void)
   }
   return p->trapframe->a0;
 }
+#if LBS
+uint64
+sys_settickets(void)
+{
+  int number;
+  argint(0, &number);
+  return settickets(number);
+}
+#endif

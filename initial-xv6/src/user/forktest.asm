@@ -47,7 +47,7 @@ forktest(void)
 
   print("fork test\n");
   3a:	00000517          	auipc	a0,0x0
-  3e:	42650513          	addi	a0,a0,1062 # 460 <sigreturn+0xc>
+  3e:	42e50513          	addi	a0,a0,1070 # 468 <settickets+0xc>
   42:	00000097          	auipc	ra,0x0
   46:	fbe080e7          	jalr	-66(ra) # 0 <print>
 
@@ -71,7 +71,7 @@ forktest(void)
   if(n == N){
     print("fork claimed to work N times!\n");
   64:	00000517          	auipc	a0,0x0
-  68:	44c50513          	addi	a0,a0,1100 # 4b0 <sigreturn+0x5c>
+  68:	45450513          	addi	a0,a0,1108 # 4b8 <settickets+0x5c>
   6c:	00000097          	auipc	ra,0x0
   70:	f94080e7          	jalr	-108(ra) # 0 <print>
     exit(1);
@@ -87,7 +87,7 @@ forktest(void)
     if(wait(0) < 0){
       print("wait stopped early\n");
   86:	00000517          	auipc	a0,0x0
-  8a:	3ea50513          	addi	a0,a0,1002 # 470 <sigreturn+0x1c>
+  8a:	3f250513          	addi	a0,a0,1010 # 478 <settickets+0x1c>
   8e:	00000097          	auipc	ra,0x0
   92:	f72080e7          	jalr	-142(ra) # 0 <print>
       exit(1);
@@ -100,7 +100,7 @@ forktest(void)
   if(wait(0) != -1){
     print("wait got too many\n");
   a0:	00000517          	auipc	a0,0x0
-  a4:	3e850513          	addi	a0,a0,1000 # 488 <sigreturn+0x34>
+  a4:	3f050513          	addi	a0,a0,1008 # 490 <settickets+0x34>
   a8:	00000097          	auipc	ra,0x0
   ac:	f58080e7          	jalr	-168(ra) # 0 <print>
     exit(1);
@@ -127,7 +127,7 @@ forktest(void)
 
   print("fork test OK\n");
   e0:	00000517          	auipc	a0,0x0
-  e4:	3c050513          	addi	a0,a0,960 # 4a0 <sigreturn+0x4c>
+  e4:	3c850513          	addi	a0,a0,968 # 4a8 <settickets+0x4c>
   e8:	00000097          	auipc	ra,0x0
   ec:	f18080e7          	jalr	-232(ra) # 0 <print>
 }
@@ -844,3 +844,13 @@ sigreturn:
  456:	00000073          	ecall
  ret
  45a:	8082                	ret
+
+000000000000045c <settickets>:
+.global settickets
+settickets:
+ li a7, SYS_settickets
+ 45c:	48e9                	li	a7,26
+ ecall
+ 45e:	00000073          	ecall
+ ret
+ 462:	8082                	ret
